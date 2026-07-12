@@ -169,7 +169,7 @@ export async function GET(
   const buffer = await Packer.toBuffer(doc)
   const filename = `TA_IS_Report_${id.slice(0, 8)}.docx`
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'Content-Disposition': `attachment; filename="${filename}"`,

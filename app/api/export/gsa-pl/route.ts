@@ -81,7 +81,7 @@ export async function GET() {
   const buffer = await workbook.xlsx.writeBuffer()
   const filename = `GSA_PL_Records_${new Date().toISOString().slice(0, 10)}.xlsx`
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,

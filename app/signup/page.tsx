@@ -44,7 +44,14 @@ export default async function SignupPage() {
             </div>
 
             <SignupForm
-              schools={schools ?? []}
+              schools={
+                (schools ?? []) as unknown as {
+                  id: string
+                  name: string
+                  districts: { name: string } | null
+                  clusters: { name: string; districts: { name: string } | null } | null
+                }[]
+              }
               districts={districts ?? []}
               clusters={clusters ?? []}
             />

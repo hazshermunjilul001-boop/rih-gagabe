@@ -61,8 +61,8 @@ export default async function ManageUsersPage() {
                   approved={u.approved}
                   claimedPosition={u.claimed_position}
                   affiliation={
-                    (u.schools as { name: string } | null)?.name ??
-                    (u.districts as { name: string } | null)?.name ??
+                    (u.schools as unknown as { name: string } | null)?.name ??
+                    (u.districts as unknown as { name: string } | null)?.name ??
                     'None specified'
                   }
                 />
