@@ -18,6 +18,8 @@ type School = {
 const fieldClass =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B6E33] focus:border-[#0B6E33]'
 
+const DEPED_EMAIL_PATTERN = /@deped\.gov\.ph$/i
+
 function schoolLabel(s: School) {
   const districtName = s.districts?.name ?? s.clusters?.districts?.name
   const clusterName = s.clusters?.name
@@ -54,6 +56,12 @@ export default function SignupForm({
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (!DEPED_EMAIL_PATTERN.test(email.trim())) {
+      setError('Please use your official DepEd email address (must end in @deped.gov.ph).')
+      return
+    }
+
     setLoading(true)
 
     const { error } = await supabase.auth.signUp({
@@ -86,7 +94,7 @@ export default function SignupForm({
         <div className="rounded-md bg-emerald-50 border border-emerald-200 px-4 py-4 text-sm text-emerald-800">
           <p className="font-medium mb-1">Account created</p>
           <p>
-            Check your email to confirm your address if prompted. An administrator will review
+            An administrator will review
             your registration and activate full access — you can log in once approved, though
             initial access will be limited until then.
           </p>
@@ -124,6 +132,9 @@ export default function SignupForm({
           className={fieldClass}
           placeholder="you@deped.gov.ph"
         />
+        <p className="text-xs text-slate-400 mt-1">
+          Must be your official DepEd email address (ends in @deped.gov.ph).
+        </p>
       </div>
 
       <div>
