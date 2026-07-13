@@ -3,6 +3,14 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 
+type SchoolDistrict = { name: string } | null
+type SchoolCluster = { name: string; districts: SchoolDistrict } | null
+type SchoolJoin = {
+  name: string
+  districts: SchoolDistrict
+  clusters: SchoolCluster
+} | null
+
 type PaperRow = {
   id: string
   tracking_no: string | null
@@ -12,6 +20,7 @@ type PaperRow = {
   title: string | null
   category: string | null
   status: string
+  schools: SchoolJoin
 }
 
 const statusColors: Record<string, string> = {
@@ -22,6 +31,20 @@ const statusColors: Record<string, string> = {
   validated: 'bg-emerald-100 text-emerald-700',
   consolidated: 'bg-teal-100 text-teal-700',
   archived: 'bg-slate-200 text-slate-500',
+}
+
+function displaySchool(p: PaperRow) {
+  return p.schools?.name ?? p.school_name_raw ?? '—'
+}
+
+function displayClusterDistrict(p: PaperRow) {
+  if (p.schools) {
+    const clusterName = p.schools.clusters?.name
+    const districtName = p.schools.districts?.name ?? p.schools.clusters?.districts?.name
+    const parts = [clusterName, districtName].filter(Boolean)
+    if (parts.length > 0) return parts.join(' / ')
+  }
+  return p.cluster_district_raw ?? '—'
 }
 
 export default async function InnovationPapersPage() {
@@ -37,10 +60,12 @@ export default async function InnovationPapersPage() {
 
   const { data, error } = await supabase
     .from('innovation_papers')
-    .select('id, tracking_no, teacher_name, school_name_raw, cluster_district_raw, title, category, status')
+    .select(
+      'id, tracking_no, teacher_name, school_name_raw, cluster_district_raw, title, category, status, schools:school_id(name, districts:district_id(name), clusters:cluster_id(name, districts:district_id(name)))'
+    )
     .order('created_at', { ascending: false })
 
-  const papers = (data ?? []) as PaperRow[]
+  const papers = (data ?? []) as unknown as PaperRow[]
 
   return (
     <div className="min-h-screen">
@@ -90,8 +115,8 @@ export default async function InnovationPapersPage() {
                   <tr key={p.id} className="border-b border-slate-100 last:border-0">
                     <td className="px-4 py-3 text-slate-900 font-mono text-xs">{p.tracking_no ?? '—'}</td>
                     <td className="px-4 py-3 text-slate-600">{p.teacher_name ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.school_name_raw ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.cluster_district_raw ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-600">{displaySchool(p)}</td>
+                    <td className="px-4 py-3 text-slate-600">{displayClusterDistrict(p)}</td>
                     <td className="px-4 py-3 text-slate-600">{p.category ?? '—'}</td>
                     <td className="px-4 py-3">
                       <span
