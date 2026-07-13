@@ -8,6 +8,7 @@ const links = [
   { href: '/dmea', label: 'DMEA' },
   { href: '/ta-is', label: 'TA/IS' },
   { href: '/kra', label: 'KRA' },
+  { href: '/innovation-papers', label: 'Innovations' },
 ]
 
 export default function Navbar({ role, email }: { role: string; email: string }) {

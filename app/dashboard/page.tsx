@@ -39,12 +39,17 @@ export default async function DashboardPage() {
     pendingApprovals = count ?? 0
   }
 
+  const { count: innovationPapersCount } = await supabase
+    .from('innovation_papers')
+    .select('*', { count: 'exact', head: true })
+
   const modules = [
     { href: '/ppas', label: 'PPAs', count: ppaCount ?? 0, desc: 'Programs, Projects & Activities' },
     { href: '/gsa-pl', label: 'Learner Performance', count: gsaPlCount ?? 0, desc: 'GSA/PL records' },
     { href: '/dlp', label: 'DLP Monitoring', count: dlpCount ?? 0, desc: 'Dynamic Learning Program status' },
     { href: '/ta-is', label: 'TA/IS', count: taIsCount ?? 0, desc: 'Technical Assistance & Supervision plans' },
     { href: '/kra', label: 'KRA Evidence', count: kraCount ?? 0, desc: 'PPSS evidence portfolio' },
+    { href: '/innovation-papers', label: 'Innovation Papers', count: innovationPapersCount ?? 0, desc: 'Master Teacher innovation paper log' },
     { href: '/dmea', label: 'DMEA Dashboard', count: null, desc: 'Division indicators & analytics' },
   ]
 
