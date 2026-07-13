@@ -14,6 +14,11 @@ export default async function NewInnovationPaperPage() {
     .eq('id', user.id)
     .single()
 
+  const { data: schools } = await supabase
+    .from('schools')
+    .select('id, name, districts:district_id(name), clusters:cluster_id(name, districts:district_id(name))')
+    .order('name')
+
   return (
     <div className="min-h-screen">
       <Navbar role={profile?.role ?? 'viewer'} email={user.email ?? ''} />
@@ -22,7 +27,16 @@ export default async function NewInnovationPaperPage() {
         <p className="text-sm text-slate-500 mb-6">
           Log a Master Teacher innovation paper or orientation attachment
         </p>
-        <InnovationPaperForm />
+        <InnovationPaperForm
+          schools={
+            (schools ?? []) as unknown as {
+              id: string
+              name: string
+              districts: { name: string } | null
+              clusters: { name: string; districts: { name: string } | null } | null
+            }[]
+          }
+        />
       </main>
     </div>
   )

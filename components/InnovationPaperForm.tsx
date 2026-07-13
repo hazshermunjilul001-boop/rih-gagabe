@@ -4,6 +4,15 @@ import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+type SchoolDistrict = { name: string } | null
+type SchoolCluster = { name: string; districts: SchoolDistrict } | null
+type School = {
+  id: string
+  name: string
+  districts: SchoolDistrict
+  clusters: SchoolCluster
+}
+
 const categories = [
   'Instructional Innovation',
   'Learning Resource Innovation',
@@ -20,13 +29,26 @@ const classifications = [
 const fieldClass =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0B6E33] focus:border-[#0B6E33]'
 
-export default function InnovationPaperForm() {
+function schoolLabel(s: School) {
+  const districtName = s.districts?.name ?? s.clusters?.districts?.name
+  const clusterName = s.clusters?.name
+  const parts = [clusterName, districtName].filter(Boolean)
+  return parts.length > 0 ? `${s.name} — ${parts.join(', ')}` : s.name
+}
+
+function schoolClusterDistrictText(s: School) {
+  const districtName = s.districts?.name ?? s.clusters?.districts?.name
+  const clusterName = s.clusters?.name
+  return [clusterName, districtName].filter(Boolean).join(' / ')
+}
+
+export default function InnovationPaperForm({ schools }: { schools: School[] }) {
   const router = useRouter()
   const supabase = createClient()
 
+  const [schoolQuery, setSchoolQuery] = useState('')
+  const [schoolId, setSchoolId] = useState('')
   const [teacherName, setTeacherName] = useState('')
-  const [schoolNameRaw, setSchoolNameRaw] = useState('')
-  const [clusterDistrictRaw, setClusterDistrictRaw] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState(categories[0])
   const [classification, setClassification] = useState(classifications[0])
@@ -34,15 +56,25 @@ export default function InnovationPaperForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  function handleSchoolInput(value: string) {
+    setSchoolQuery(value)
+    const match = schools.find((s) => schoolLabel(s) === value)
+    setSchoolId(match?.id ?? '')
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+
+    const matchedSchool = schools.find((s) => s.id === schoolId)
+
     setLoading(true)
 
     const { error } = await supabase.from('innovation_papers').insert({
       teacher_name: teacherName,
-      school_name_raw: schoolNameRaw,
-      cluster_district_raw: clusterDistrictRaw,
+      school_id: schoolId || null,
+      school_name_raw: matchedSchool ? matchedSchool.name : schoolQuery,
+      cluster_district_raw: matchedSchool ? schoolClusterDistrictText(matchedSchool) : null,
       title,
       category,
       classification,
@@ -81,26 +113,26 @@ export default function InnovationPaperForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">School</label>
-          <input
-            value={schoolNameRaw}
-            onChange={(e) => setSchoolNameRaw(e.target.value)}
-            required
-            className={fieldClass}
-            placeholder="e.g. Sta. Ana National High School"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Cluster / District</label>
-          <input
-            value={clusterDistrictRaw}
-            onChange={(e) => setClusterDistrictRaw(e.target.value)}
-            className={fieldClass}
-            placeholder="e.g. Cluster 1 / Sta. Ana District"
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">School</label>
+        <input
+          list="school-options"
+          value={schoolQuery}
+          onChange={(e) => handleSchoolInput(e.target.value)}
+          required
+          className={fieldClass}
+          placeholder="Start typing school name..."
+        />
+        <datalist id="school-options">
+          {schools.map((s) => (
+            <option key={s.id} value={schoolLabel(s)} />
+          ))}
+        </datalist>
+        {schoolQuery && !schoolId && (
+          <p className="text-xs text-amber-600 mt-1">
+            Not matched to a school in the masterlist — will be saved as free text.
+          </p>
+        )}
       </div>
 
       <div>
