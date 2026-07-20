@@ -9,6 +9,7 @@ const links = [
   { href: '/ta-is', label: 'TA/IS' },
   { href: '/kra', label: 'KRA' },
   { href: '/innovation-papers', label: 'Innovations' },
+  { href: '/mt-innovation-tracker', label: 'MT Tracker' },
 ]
 
 export default function Navbar({ role, email }: { role: string; email: string }) {

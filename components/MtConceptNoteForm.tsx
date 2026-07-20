@@ -103,7 +103,7 @@ export default function MtConceptNoteForm({ schools }: { schools: School[] }) {
       return
     }
 
-    router.push('/innovation-papers')
+    router.push('/mt-innovation-tracker')
     router.refresh()
   }
 
